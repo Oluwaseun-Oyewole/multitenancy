@@ -26,34 +26,37 @@ export interface JwtPayload {
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectDataSource() private readonly publicDataSource: DataSource,
     private readonly tenantProvisionService: TenantProvisioningService,
     private readonly tokenService: TokenService,
   ) {}
 
   async signup(signupDto: SignupDto) {
-    const schema = `tenant_${signupDto.slug}`;
+    const schema = signupDto.slug;
 
-    const existing = await this.dataSource
+    const existing = await this.publicDataSource
       .getRepository(Tenant)
-      .findOne({ where: { slug: signupDto.slug } });
+      .findOne({ where: { slug: schema } });
 
     if (existing) {
-      throw new DuplicateResourceException('TENANT_SLUG', signupDto.slug);
+      throw new DuplicateResourceException('TENANT_SLUG', schema);
     }
 
     const passwordHash = await hashPassword(signupDto.tenantOwnerPassword);
     let tenant: Tenant;
 
     try {
-      tenant = await this.dataSource.getRepository(Tenant).save({
+      tenant = await this.publicDataSource.getRepository(Tenant).save({
         name: signupDto.name,
         slug: signupDto.slug,
         tenantOwnerEmail: signupDto.tenantOwnerEmail,
         schemaName: schema,
         status: TenantStatus.ACTIVE,
       });
-      await this.dataSource.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+
+      await this.publicDataSource.query(
+        `CREATE SCHEMA IF NOT EXISTS "${schema}"`,
+      );
       const tenantDb = await this.tenantProvisionService.provision(schema);
 
       await tenantDb.getRepository(User).save({
@@ -65,13 +68,14 @@ export class AuthService {
       });
     } catch (error) {
       //  rollback
-      await this.dataSource.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+      await this.publicDataSource.query(
+        `DROP SCHEMA IF EXISTS "${schema}" CASCADE`,
+      );
       if (tenant?.id) {
-        await this.dataSource.getRepository(Tenant).delete(tenant.id);
+        await this.publicDataSource.getRepository(Tenant).delete(tenant.id);
       }
       // disconnect and remove tenant connection from cache
       await this.tenantProvisionService.deleteConnection(schema);
-
       throw error;
     }
   }
@@ -88,7 +92,7 @@ export class AuthService {
       await this.tenantProvisionService.getDataSource(schemaName);
 
     const result = await tenantDb.query(
-      `SELECT id, email, password_hash, role, activated_at,last_login_date FROM "${schemaName}".users
+      `SELECT id, email, password_hash,role,activated_at,last_login_date FROM "${schemaName}".users
       WHERE email = $1
       LIMIT 1`,
       [loginDto.email],
@@ -110,7 +114,6 @@ export class AuthService {
     if (!isPasswordValid) throw new InvalidCredentialsException();
 
     user.password_hash = undefined;
-    user.tenantId = tenant.id;
 
     tenantDb
       .query(
@@ -121,9 +124,10 @@ export class AuthService {
         console.error('Failed to update last login timestamp', err),
       );
 
+    user.tenant = schemaName;
+
     const { accessToken, refreshToken } = await this.tokenService.issueToken(
       user.id,
-      user.tenantId,
       user.role,
       schemaName,
     );

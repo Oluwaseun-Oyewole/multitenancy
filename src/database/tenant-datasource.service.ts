@@ -1,22 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectDataSource } from '@nestjs/typeorm';
+import * as path from 'node:path';
 import { CacheWrapper } from 'src/common/cache/index.cache';
 import { User } from 'src/user/entity/user.entity';
 import { DataSource } from 'typeorm';
-
-const TENANT_ENTITIES = [User];
 
 @Injectable()
 export class TenantProvisioningService {
   private readonly cache: CacheWrapper<DataSource> = new CacheWrapper();
 
-  constructor(
-    @InjectDataSource() private readonly rootDs: DataSource,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  async provision(schemaName: string): Promise<DataSource> {
+  async provision(schemaName: string) {
     const ds = new DataSource({
       type: 'postgres',
       host: this.configService.get<string>('DB_HOST'),
@@ -25,14 +20,14 @@ export class TenantProvisioningService {
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_NAME'),
       schema: schemaName,
-      entities: TENANT_ENTITIES,
+      entities: [User],
       synchronize: false,
       poolSize: 5,
       extra: {
         idleTimeoutMillis: 60_000,
         connectionTimeoutMillis: 5_000,
       },
-      // migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
+      migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
     });
 
     await ds.initialize();
@@ -42,7 +37,7 @@ export class TenantProvisioningService {
     return ds;
   }
 
-  async getDataSource(schemaName: string): Promise<DataSource> {
+  async getDataSource(schemaName: string) {
     if (this.cache.has(schemaName)) return this.cache.get(schemaName);
     return this.provision(schemaName);
   }

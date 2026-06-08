@@ -1,7 +1,7 @@
-import { BullModule } from '@nestjs/bullmq';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     FeedbackModule,
@@ -28,22 +29,6 @@ import { UserModule } from './user/user.module';
         secret: config.get<string>('JWT_SECRET_KEY'),
         signOptions: { expiresIn: config.get<number>('JWT_ACCESS_EXPIRES') },
       }),
-    }),
-    BullModule.forRoot({
-      connection: {
-        host: 'localhost',
-        port: 6379,
-      },
-      defaultJobOptions: {
-        attempts: 3,
-        removeOnComplete: true,
-        removeOnFail: false,
-        backoff: {
-          type: 'exponential',
-          delay: 5000,
-          jitter: 1,
-        },
-      },
     }),
     TokenModule,
   ],

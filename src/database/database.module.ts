@@ -21,17 +21,11 @@ import { TenantProvisioningService } from './tenant-datasource.service';
         schema: 'public', // ← root DS only ever touches public schema
         synchronize: false,
         entities: [Tenant, TenantInvitation], // ← ONLY public-schema entities
-        // migrations: ['dist/database/migrations/public/*.js'],
-        // migrationsRun: true,
+        migrations: ['dist/database/migrations/public/*.js'],
+        migrationsRun: true,
         extra: {
-          max: config.get('NODE_ENV') === 'production' ? 20 : 5,
-          min: config.get('NODE_ENV') === 'production' ? 5 : 1,
-          idleTimeoutMillis: 30_000,
+          idleTimeoutMillis: 60_000,
           connectionTimeoutMillis: 5_000,
-          ssl:
-            config.get('NODE_ENV') === 'production'
-              ? { rejectUnauthorized: false }
-              : false,
         },
       }),
     }),
