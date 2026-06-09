@@ -8,7 +8,7 @@ import {
 } from 'src/common/exceptions/domain.exceptions';
 import { hashPassword } from 'src/common/utils/index.utils';
 import { TenantProvisioningService } from 'src/database/tenant-datasource.service';
-import { User } from 'src/user/entity/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as uuid from 'uuid';
 import {
@@ -51,7 +51,7 @@ export class TenantService {
     });
 
     if (existingUser) {
-      throw new BadRequestException('User already exists in tenant');
+      throw new DuplicateResourceException('USER', dto.email);
     }
 
     const invitation = this.tenantInvitationRepository.create({
@@ -60,7 +60,7 @@ export class TenantService {
       role: dto.role,
       token,
       invitedByUserId: invitedUserId,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     const savedInvitation =
       await this.tenantInvitationRepository.save(invitation);

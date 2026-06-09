@@ -12,6 +12,7 @@ import { RedisModule } from './redis/redis.module';
 import { TenantModule } from './tenant/tenant.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UserModule } from './user/user.module';
       }),
     }),
     TokenModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

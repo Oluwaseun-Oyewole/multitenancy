@@ -12,7 +12,7 @@ import { hashPassword } from 'src/common/utils/index.utils';
 import { TenantProvisioningService } from 'src/database/tenant-datasource.service';
 import { Tenant } from 'src/tenant/entities/tenant.entity';
 import { TokenService } from 'src/token/token.service';
-import { User } from 'src/user/entity/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { LoginDto, SignupDto } from './dto/index.dto';
 

@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as path from 'node:path';
 import { CacheWrapper } from 'src/common/cache/index.cache';
-import { User } from 'src/user/entity/user.entity';
+import { Feedback } from 'src/feedback/entities/feedback.entity';
+import { Product } from 'src/products/entities/product.entity';
+import { User } from 'src/user/entities/user.entity';
 import { DataSource } from 'typeorm';
+
+const TENANT_ENTITIES = [User, Product, Feedback];
 
 @Injectable()
 export class TenantProvisioningService {
@@ -20,14 +23,14 @@ export class TenantProvisioningService {
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_NAME'),
       schema: schemaName,
-      entities: [User],
-      synchronize: false,
+      entities: TENANT_ENTITIES,
+      synchronize: true,
       poolSize: 5,
       extra: {
         idleTimeoutMillis: 60_000,
         connectionTimeoutMillis: 5_000,
       },
-      migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
+      // migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
     });
 
     await ds.initialize();

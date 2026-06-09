@@ -28,3 +28,22 @@ export enum Role {
   ADMIN = 'admin',
   MEMBER = 'member',
 }
+
+export enum FeedbackStatus {
+  PENDING = 'OPEN',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+}
+
+export enum FeedbackPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export enum FeedbackType {
+  BUG = 'BUG',
+  FEATURE_REQUEST = 'FEATURE_REQUEST',
+  IMPROVEMENT = 'IMPROVEMENT',
+}

@@ -2,6 +2,8 @@ import {
   BadRequestException,
   CallHandler,
   ExecutionContext,
+  HttpException,
+  HttpStatus,
   NestInterceptor,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -18,8 +20,15 @@ export class ErrorResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       catchError((error) => {
-        const statusCode = error.status || 500;
-        const message = error.message || 'Internal Server Error';
+        const statusCode = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
+
+        const errorResponse =
+          error instanceof HttpException ? error.getResponse() : null;
+
+        const message =
+          typeof errorResponse === 'object' && errorResponse['message']
+            ? errorResponse['message']
+            : error.message || 'Internal Server Error';
 
         response.status(statusCode).json({
           success: false,
