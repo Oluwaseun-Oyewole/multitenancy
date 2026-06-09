@@ -47,3 +47,17 @@ export enum FeedbackType {
   FEATURE_REQUEST = 'FEATURE_REQUEST',
   IMPROVEMENT = 'IMPROVEMENT',
 }
+
+export enum ChangelogType {
+  FEATURE = 'feature',
+  IMPROVEMENT = 'improvement',
+  BUGFIX = 'bugfix',
+  BREAKING = 'breaking',
+  SECURITY = 'security',
+}
+
+export enum ChangelogStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}

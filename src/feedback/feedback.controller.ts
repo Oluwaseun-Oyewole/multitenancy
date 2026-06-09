@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import {
   CurrentTenant,
@@ -14,7 +14,7 @@ import { FeedbackService } from './feedback.service';
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
-  @Post('create')
+  @Post()
   async createFeedback(
     @CurrentTenant() tenant: Tenant,
     @CurrentUser() user: TokenPayload,
@@ -24,6 +24,17 @@ export class FeedbackController {
       tenant.schemaName,
       user.sub,
       feedbackData,
+    );
+  }
+
+  @Put()
+  async updateFeedback(
+    @CurrentTenant() tenant: Tenant,
+    @Body() feedbackDto: Partial<CreateFeedbackDto>,
+  ) {
+    return this.feedbackService.updateProductFeedback(
+      tenant.schemaName,
+      feedbackDto,
     );
   }
 }

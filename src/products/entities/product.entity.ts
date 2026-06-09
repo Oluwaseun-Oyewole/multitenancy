@@ -1,3 +1,4 @@
+import { Changelog } from 'src/changelogs/entities/changelog.entity';
 import { BaseEntity } from 'src/common/utils/base.entity';
 import { Feedback } from 'src/feedback/entities/feedback.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
@@ -15,4 +16,7 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Feedback, (feedback) => feedback.product)
   feedbacks: Feedback[];
+
+  @OneToMany(() => Changelog, (changeLog) => changeLog.product)
+  changeLogs: Changelog[];
 }
