@@ -59,7 +59,7 @@ export class AuthService {
       );
       const tenantDb = await this.tenantProvisionService.provision(schema);
 
-      await tenantDb.getRepository(User).save({
+      return await tenantDb.getRepository(User).save({
         email: signupDto.tenantOwnerEmail,
         displayName: signupDto.name,
         passwordHash,

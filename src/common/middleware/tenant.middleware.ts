@@ -22,10 +22,8 @@ export class TenantMiddleware implements NestMiddleware {
     if (process.env.NODE_ENV === 'production') {
       slug = req.hostname.split('.')[0];
     } else {
+      // for localhost test
       slug = req.headers['x-tenant-slug'] as string | undefined;
-    }
-    if (slug && slug.split('_')[0] === 'tenant') {
-      slug = slug.split('_')[1];
     }
 
     if (!slug || NON_TENANT_PATHS.includes(slug)) {

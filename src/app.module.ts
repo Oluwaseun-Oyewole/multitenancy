@@ -8,11 +8,12 @@ import { AuthModule } from './auth/auth.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { DatabaseModule } from './database/database.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { ProductsModule } from './products/products.module';
 import { RedisModule } from './redis/redis.module';
 import { TenantModule } from './tenant/tenant.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
-import { ProductsModule } from './products/products.module';
+import { ChangelogsModule } from './changelogs/changelogs.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ProductsModule } from './products/products.module';
     }),
     TokenModule,
     ProductsModule,
+    ChangelogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

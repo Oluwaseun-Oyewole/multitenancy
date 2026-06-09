@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Changelog } from 'src/changelogs/entities/changelog.entity';
 import { CacheWrapper } from 'src/common/cache/index.cache';
 import { Feedback } from 'src/feedback/entities/feedback.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
 import { DataSource } from 'typeorm';
-
-const TENANT_ENTITIES = [User, Product, Feedback];
 
 @Injectable()
 export class TenantProvisioningService {
@@ -23,7 +22,7 @@ export class TenantProvisioningService {
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_NAME'),
       schema: schemaName,
-      entities: TENANT_ENTITIES,
+      entities: [User, Product, Feedback, Changelog],
       synchronize: true,
       poolSize: 5,
       extra: {

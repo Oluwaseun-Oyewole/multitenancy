@@ -10,7 +10,6 @@ import {
   SwaggerCustomOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import { ErrorResponseInterceptor } from './common/interceptors/error.reponse.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logger.interceptor';
 import { SuccessResponseInterceptor } from './common/interceptors/success.response.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
@@ -49,7 +48,7 @@ export async function appCreate(app: INestApplication) {
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     // new CacheInterceptor(),
-    new ErrorResponseInterceptor(),
+    // new ErrorResponseInterceptor(),
     new SuccessResponseInterceptor(app.get(Reflector)),
     new TimeoutInterceptor(app.get(Reflector)),
   );
