@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as path from 'node:path';
 import { Changelog } from 'src/changelogs/entities/changelog.entity';
 import { CacheWrapper } from 'src/common/cache/index.cache';
 import { Feedback } from 'src/feedback/entities/feedback.entity';
@@ -23,13 +24,13 @@ export class TenantProvisioningService {
       database: this.configService.get<string>('DB_NAME'),
       schema: schemaName,
       entities: [User, Product, Feedback, Changelog],
-      synchronize: true,
+      synchronize: false,
       poolSize: 5,
       extra: {
         idleTimeoutMillis: 60_000,
         connectionTimeoutMillis: 5_000,
       },
-      // migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
+      migrations: [path.join(__dirname, 'migrations/tenant/*.js')],
     });
 
     await ds.initialize();

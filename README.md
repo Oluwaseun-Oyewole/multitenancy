@@ -151,25 +151,6 @@ npm run start:prod
 
 Create a `.env` file in project root.
 
-| Variable                 | Required | Description                                       | Example                                       |
-| ------------------------ | -------- | ------------------------------------------------- | --------------------------------------------- |
-| `PORT`                   | No       | Application port (default 3000).                  | `3000`                                        |
-| `NODE_ENV`               | No       | Runtime mode used by tenant middleware.           | `development`                                 |
-| `ALLOWED_ORIGINS`        | Yes      | Comma-separated CORS allowlist.                   | `http://localhost:5173,http://localhost:3000` |
-| `DB_HOST`                | Yes      | PostgreSQL host.                                  | `localhost`                                   |
-| `DB_PORT`                | Yes      | PostgreSQL port.                                  | `5432`                                        |
-| `DB_USER`                | Yes      | PostgreSQL username.                              | `admin`                                       |
-| `DB_PASSWORD`            | Yes      | PostgreSQL password.                              | `secret`                                      |
-| `DB_NAME`                | Yes      | PostgreSQL database name.                         | `multi_tenancy`                               |
-| `JWT_SECRET_KEY`         | Yes      | Access token signing secret.                      | `replace-with-strong-secret`                  |
-| `JWT_ACCESS_EXPIRES`     | Yes      | Access token TTL.                                 | `900`                                         |
-| `JWT_REFRESH_SECRET_KEY` | Yes      | Refresh token signing secret.                     | `replace-with-strong-refresh-secret`          |
-| `JWT_REFRESH_EXPIRES`    | Yes      | Refresh token TTL.                                | `604800`                                      |
-| `redis.host`             | Yes      | Redis host key used by current config loader.     | `localhost`                                   |
-| `redis.port`             | Yes      | Redis port key used by current config loader.     | `6379`                                        |
-| `redis.password`         | No       | Redis password key used by current config loader. | ``                                            |
-| `redis.db`               | No       | Redis DB index key used by current config loader. | `0`                                           |
-
 Example `.env`:
 
 ```dotenv
@@ -207,11 +188,9 @@ npm run format
 
 ### Database and Tenant Provisioning Notes
 
-- Public schema is initialized with TypeORM `synchronize: true`.
+- Public schema is initialized with TypeORM `run migration`.
 - Tenant schemas are created at signup and initialized dynamically.
 - Tenant DataSource currently calls `runMigrations()`, but migration files are commented out in configuration.
-
-For production hardening, replace `synchronize: true` with versioned migration workflows.
 
 ## API Surface
 
