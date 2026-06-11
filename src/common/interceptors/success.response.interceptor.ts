@@ -32,12 +32,27 @@ export class SuccessResponseInterceptor<T> implements NestInterceptor<
 
     return next.handle().pipe(
       map((data) => {
-        return {
+        const isPaginated =
+          data && typeof data === 'object' && 'data' in data && 'meta' in data;
+
+        const base = {
           success: true,
           statusCode: response.statusCode,
           message,
           timestamp: new Date().toISOString(),
           path: request.url,
+        };
+
+        if (isPaginated) {
+          return {
+            ...base,
+            data: (data as any).data,
+            meta: (data as any).meta,
+          };
+        }
+
+        return {
+          ...base,
           data,
         };
       }),

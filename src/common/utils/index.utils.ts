@@ -13,3 +13,17 @@ export const hashPassword = async (password: string) => {
 export const hashToken = (token: string): string => {
   return crypto.createHash('sha256').update(token).digest('hex');
 };
+
+export interface DecodedCursor {
+  id: string;
+  createdAt: string;
+}
+
+export function encodeCursor(id: string, createdAt: Date): string {
+  const payload: DecodedCursor = { id, createdAt: createdAt.toISOString() };
+  return Buffer.from(JSON.stringify(payload)).toString('base64url');
+}
+
+export function decodeCursor(cursor: string): DecodedCursor {
+  return JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+}
