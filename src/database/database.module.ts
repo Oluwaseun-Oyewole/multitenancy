@@ -19,10 +19,10 @@ import { TenantProvisioningService } from './tenant-datasource.service';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
         schema: 'public', // ← root DS only ever touches public schema
-        synchronize: true,
+        synchronize: false,
         entities: [Tenant, TenantInvitation], // ← ONLY public-schema entities
-        // migrations: ['dist/database/migrations/public/*.js'],
-        // migrationsRun: true,
+        migrations: ['dist/database/migrations/public/*.js'],
+        migrationsRun: true,
         extra: {
           idleTimeoutMillis: 60_000,
           connectionTimeoutMillis: 5_000,

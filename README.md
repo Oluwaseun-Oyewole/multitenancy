@@ -1,73 +1,325 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Multi-Tenancy Backend Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-oriented NestJS backend for multi-tenant product workspaces (tenant-per-schema), with isolated tenant data, tenant-scoped authentication, invitation workflows, and feedback/changelog management.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [Overview](#overview)
+- [Core Capabilities](#core-capabilities)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Runbook](#runbook)
+- [API Surface](#api-surface)
+- [Authentication and Tenant Resolution](#authentication-and-tenant-resolution)
+- [Response Contract](#response-contract)
+- [Data Model](#data-model)
+- [Operational Notes](#operational-notes)
+- [Testing and Quality](#testing-and-quality)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Overview
 
-## Installation
+This service implements schema-per-tenant multi-tenancy on PostgreSQL:
 
-```bash
-$ npm install
+- Public schema stores platform-wide records such as tenants and invitations.
+- Each tenant receives its own schema for users, products, feedback, and changelogs.
+- Tenant context is resolved per request and propagated through the application layer.
+- JWT access tokens and Redis-backed refresh token metadata support stateless API auth with revocation primitives.
+
+The API is versioned and exposed under:
+
+- Base API prefix: `/api`
+- Default API version: `/v1`
+- Effective base path: `/api/v1`
+
+Swagger UI is available at `/api`.
+
+## Core Capabilities
+
+- Tenant onboarding with schema provisioning at signup.
+- Tenant-scoped login and JWT token issuance.
+- Invite, accept, revoke tenant membership workflows.
+- Product creation per tenant.
+- Feedback creation and update per tenant.
+- Changelog creation per tenant.
+- Standardized success response envelope.
+- Request timeout and request logging interceptors.
+- Daily cron cleanup for expired invitations.
+
+## Architecture
+
+### Multi-Tenancy Strategy
+
+- Isolation model: PostgreSQL schema per tenant.
+- Public data source: fixed to `public` schema for tenant metadata and invitations.
+- Tenant data source: created dynamically and cached by schema name.
+- Tenant entities in isolated schemas: users, products, feedback, changelogs.
+
+### Request Lifecycle
+
+1. `TenantMiddleware` resolves tenant context.
+2. JWT guard authenticates protected routes.
+3. Tenant and user context are injected via custom decorators.
+4. Services use `TenantProvisioningService` to obtain tenant-specific TypeORM DataSource.
+5. Global interceptors format successful responses and enforce timeout policy.
+
+### Security and Validation
+
+- ValidationPipe is configured globally with:
+  - `whitelist: true`
+  - `forbidNonWhitelisted: true`
+  - `transform: true`
+- Password hashing uses Argon2.
+- JWT uses separate access and refresh secrets.
+- Refresh token metadata is stored in Redis as hashed token material.
+
+## Technology Stack
+
+- Runtime: Node.js 20+
+- Framework: NestJS 10
+- Language: TypeScript 5
+- Database: PostgreSQL 16
+- ORM: TypeORM
+- Cache and token state: Redis (ioredis)
+- Auth: Passport JWT + @nestjs/jwt
+- API docs: Swagger (@nestjs/swagger)
+- Scheduling: @nestjs/schedule
+- Containers: Docker + Docker Compose
+
+## Repository Structure
+
+```text
+src/
+  auth/                 Authentication module (signup/login, guard, strategy)
+  tenant/               Tenant invitation lifecycle and cleanup cron
+  database/             Public and tenant DataSource provisioning
+  user/                 Tenant user entity/model
+  products/             Product APIs and tenant persistence
+  feedback/             Feedback APIs and tenant persistence
+  changelogs/           Changelog APIs and tenant persistence
+  redis/                Redis client and wrapper service
+  common/               Decorators, exceptions, interceptors, middleware, utilities
+  token/                JWT issuance and refresh-token persistence helpers
+  main.ts               Bootstrap entrypoint
+  app.create.ts         Global app configuration (pipes, docs, cors, interceptors)
 ```
 
-## Running the app
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20 or later
+- npm 10 or later
+- Docker Desktop (recommended for local infrastructure)
+
+### Option 1: Full Local Stack with Docker Compose
+
+Start API + PostgreSQL + pgAdmin + Redis + RedisInsight:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+docker compose up --build
 ```
 
-## Test
+Available services:
+
+- API: `http://localhost:3000`
+- Swagger: `http://localhost:3000/api`
+- PostgreSQL: `localhost:5432`
+- pgAdmin: `http://localhost:8080`
+- Redis: `localhost:6379`
+- RedisInsight: `http://localhost:5540`
+
+### Option 2: Run API Locally (External DB/Redis)
+
+```bash
+npm install
+npm run start:dev
+```
+
+Build and run production bundle:
+
+```bash
+npm run build
+npm run start:prod
+```
+
+## Environment Variables
+
+Create a `.env` file in project root.
+
+Example `.env`:
+
+```dotenv
+PORT=3000
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=admin
+DB_PASSWORD=secret
+DB_NAME=multi_tenancy
+
+JWT_SECRET_KEY=super-secret-access-key
+JWT_ACCESS_EXPIRES=900
+JWT_REFRESH_SECRET_KEY=super-secret-refresh-key
+JWT_REFRESH_EXPIRES=604800
+
+redis.host=localhost
+redis.port=6379
+redis.password=
+redis.db=0
+```
+
+## Runbook
+
+### Local Development Commands
+
+```bash
+npm run start:dev
+npm run start:debug
+npm run lint
+npm run format
+```
+
+### Database and Tenant Provisioning Notes
+
+- Public schema is initialized with TypeORM `run migration`.
+- Tenant schemas are created at signup and initialized dynamically.
+- Tenant DataSource currently calls `runMigrations()`, but migration files are commented out in configuration.
+
+## API Surface
+
+All routes below are prefixed with `/api/v1`.
+
+### Auth
+
+- `POST /auth/signup` : creates tenant, schema, and owner user.
+- `POST /auth/login` : requires tenant context and returns access/refresh tokens.
+
+### Tenant
+
+- `POST /tenant/invite` : invite user into tenant.
+- `POST /tenant/accept-invitation` : accept invitation and create tenant user.
+- `POST /tenant/revoke-invitation` : revoke pending invitation.
+
+### Product
+
+- `POST /products` : create product in tenant schema.
+
+### Feedback
+
+- `POST /feedback` : create feedback linked to product and optionally changelog.
+- `PUT /feedback` : update feedback.
+
+### Changelogs
+
+- `POST /changelogs` : create changelog entry in tenant schema.
+
+### Misc
+
+- `GET /` : base hello endpoint.
+
+## Authentication and Tenant Resolution
+
+### Tenant Resolution Rules
+
+- Production mode: tenant slug is resolved from request hostname subdomain.
+- Non-production mode: tenant slug is read from `x-tenant-slug` request header.
+- Reserved non-tenant host prefixes include: `localhost`, `www`, `app`, `127`.
+
+### Accessing Protected Endpoints Locally
+
+Include:
+
+- `Authorization: Bearer <access_token>`
+- `x-tenant-slug: <tenant_slug>`
+
+Example:
+
+```bash
+curl -X POST 'http://localhost:3000/api/v1/products' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'x-tenant-slug: acme' \
+  -d '{"title":"Roadmap","description":"Q4 priorities"}'
+```
+
+## Response Contract
+
+Successful responses are wrapped by a global interceptor:
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Request successful",
+  "timestamp": "2026-06-09T12:34:56.000Z",
+  "path": "/api/v1/products",
+  "data": {}
+}
+```
+
+## Data Model
+
+### Public Schema
+
+- `tenants`
+  - Tenant metadata: slug, owner email, schema name, status, plan.
+- `invitations`
+  - Cross-tenant invitation records and lifecycle states.
+
+### Tenant Schema (per tenant)
+
+- `users`
+- `products`
+- `feedback`
+- `change-logs`
+
+`BaseEntity` fields are shared across entities:
+
+- `id` (UUID)
+- `created_at`
+- `updated_at`
+
+## Operational Notes
+
+- Invitation cleanup runs daily at midnight and marks expired pending invitations.
+- Redis connection includes retry/backoff behavior and graceful shutdown.
+- Swagger is configured with persistent authorization to support authenticated testing.
+- CORS uses explicit allowlist validation from `ALLOWED_ORIGINS`.
+
+## Testing and Quality
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
-# e2e tests
-$ npm run test:e2e
+# watch mode
+npm run test:watch
 
-# test coverage
-$ npm run test:cov
+# coverage
+npm run test:cov
+
+# end-to-end tests
+npm run test:e2e
 ```
 
-## Support
+## Troubleshooting
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- `Tenant context is required`:
+  - Ensure `x-tenant-slug` is present in non-production requests.
+- `Authentication required` or JWT errors:
+  - Verify access token validity and `JWT_SECRET_KEY` consistency.
+- CORS blocked:
+  - Ensure request origin exists in `ALLOWED_ORIGINS`.
+- Redis connection warnings:
+  - Verify Redis host/port/password values and container health.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is currently marked as `UNLICENSED` in `package.json`.
