@@ -23,15 +23,16 @@ export class FeedbackService {
     const productRepo = tenantDataSource.getRepository(Product);
     const feedbackRepo = tenantDataSource.getRepository(Feedback);
     const changeLogRepo = tenantDataSource.getRepository(Changelog);
-
     const productExist = await productRepo.findOne({
       where: { id: feedbackDto.productId },
     });
+
     if (!productExist) {
       throw new ResourceNotFoundException('PRODUCT', feedbackDto.productId);
     }
 
     let changeLog: Changelog | null;
+
     if (feedbackDto.changelogId) {
       changeLog = await changeLogRepo.findOne({
         where: { id: feedbackDto.changelogId },
@@ -50,10 +51,11 @@ export class FeedbackService {
       product: productExist,
       changeLogs: changeLog ?? undefined,
     });
-    return feedbackRepo.save(feedback);
+    const feedbackData = await feedbackRepo.save(feedback);
+    return { ...feedbackData };
   }
 
-  async updateProductFeedback(
+  async updateFeedback(
     schema: string,
     feedbackDto: Partial<CreateFeedbackDto>,
   ) {

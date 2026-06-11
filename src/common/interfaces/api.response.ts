@@ -1,3 +1,5 @@
+import { IMeta } from '../dto/success.response.dto';
+
 export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
@@ -5,4 +7,5 @@ export interface ApiResponse<T> {
   timestamp: string;
   path: string;
   data: T;
+  meta?: IMeta;
 }

@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { SuccessMessage } from 'src/common/decorators/success.message.decorator';
 import { CurrentTenant } from 'src/common/decorators/tenant.decorator';
 import { BadRequestException } from 'src/common/exceptions/domain.exceptions';
 import { Tenant } from 'src/tenant/entities/tenant.entity';
@@ -9,11 +10,13 @@ import { LoginDto, SignupDto } from './dto/index.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @SuccessMessage('Tenant registration successful')
   @Post('signup')
   async tenantSignup(@Body() signupDto: SignupDto) {
     return this.authService.signup(signupDto);
   }
 
+  @SuccessMessage('Login successful')
   @Post('login')
   async login(@CurrentTenant() tenant: Tenant, @Body() loginDto: LoginDto) {
     if (!tenant) {

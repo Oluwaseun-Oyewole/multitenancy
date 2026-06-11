@@ -1,5 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { SuccessMessage } from 'src/common/decorators/success.message.decorator';
 import { CurrentTenant } from 'src/common/decorators/tenant.decorator';
 import { Tenant } from 'src/tenant/entities/tenant.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -10,6 +11,7 @@ import { ProductsService } from './products.service';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @SuccessMessage('Product created successfully')
   @Post()
   createProduct(
     @Body() createProductDto: CreateProductDto,

@@ -1,5 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { SuccessMessage } from 'src/common/decorators/success.message.decorator';
 import {
   CurrentTenant,
   CurrentUser,
@@ -18,6 +19,7 @@ import { TenantService } from './tenant.service';
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
+  @SuccessMessage('User invited successfully')
   @Post('invite')
   async inviteUserToTenant(
     @Body() dto: CreateInvitationDto,
@@ -31,11 +33,13 @@ export class TenantController {
     );
   }
 
+  @SuccessMessage('Invitation accepted successfully')
   @Post('accept-invitation')
   async acceptInvitation(@Body() dto: AcceptInvitationDto) {
     return this.tenantService.acceptTenantInvitation(dto);
   }
 
+  @SuccessMessage('Invitation revoked successfully')
   @Post('revoke-invitation')
   async revokeInvitation(@Body() dto: RevokeInvitationDto) {
     return this.tenantService.revokeInvitation(dto);

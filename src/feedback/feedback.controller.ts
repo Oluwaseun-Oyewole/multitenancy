@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { SuccessMessage } from 'src/common/decorators/success.message.decorator';
 import {
   CurrentTenant,
   CurrentUser,
@@ -14,6 +15,7 @@ import { FeedbackService } from './feedback.service';
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
+  @SuccessMessage('Feedback created successfully')
   @Post()
   async createFeedback(
     @CurrentTenant() tenant: Tenant,
@@ -27,14 +29,12 @@ export class FeedbackController {
     );
   }
 
+  @SuccessMessage('Feedback updated successfully')
   @Put()
   async updateFeedback(
     @CurrentTenant() tenant: Tenant,
     @Body() feedbackDto: Partial<CreateFeedbackDto>,
   ) {
-    return this.feedbackService.updateProductFeedback(
-      tenant.schemaName,
-      feedbackDto,
-    );
+    return this.feedbackService.updateFeedback(tenant.schemaName, feedbackDto);
   }
 }
