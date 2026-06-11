@@ -41,6 +41,7 @@ export class ChangelogsService {
     }
 
     const [data, total] = await changeLogRepo.findAndCount({
+      // relations: { product: true },
       order: { createdAt: 'DESC' },
       where: { productId },
       take: limit,

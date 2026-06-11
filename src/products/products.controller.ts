@@ -1,4 +1,13 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { SuccessMessage } from 'src/common/decorators/success.message.decorator';
 import { CurrentTenant } from 'src/common/decorators/tenant.decorator';
@@ -20,6 +29,22 @@ export class ProductsController {
     return this.productsService.createProduct(
       createProductDto,
       tenant.schemaName,
+    );
+  }
+
+  @SuccessMessage('Products retrieved successfully')
+  @Get()
+  getProducts(
+    @CurrentTenant() tenant: Tenant,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+  ) {
+    return this.productsService.getProducts(
+      tenant.schemaName,
+      page,
+      limit,
+      search,
     );
   }
 }
