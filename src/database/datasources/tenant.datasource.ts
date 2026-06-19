@@ -17,4 +17,11 @@ export default new DataSource({
   schema: process.env.TENANT_SCHEMA ?? 'tenant_acme',
   entities: [User, Product, Feedback, Changelog],
   migrations: ['src/database/migrations/tenant/*.ts'],
+  ssl: { rejectUnauthorized: false },
+  extra: {
+    max: 20,
+    min: 5,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
+  },
 });

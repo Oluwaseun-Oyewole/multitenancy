@@ -14,6 +14,13 @@ const AppDataSource = new DataSource({
   synchronize: false,
   entities: [Tenant, TenantInvitation],
   migrations: ['src/database/migrations/public/*{.ts,.js}'],
+  ssl: { rejectUnauthorized: false },
+  extra: {
+    max: 20,
+    min: 5,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
+  },
 });
 
 export default AppDataSource;

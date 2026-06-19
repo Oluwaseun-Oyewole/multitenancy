@@ -26,6 +26,7 @@ export class TenantProvisioningService {
       entities: [User, Product, Feedback, Changelog],
       synchronize: false,
       poolSize: 5,
+      ssl: { rejectUnauthorized: false },
       extra: {
         idleTimeoutMillis: 60_000,
         connectionTimeoutMillis: 5_000,

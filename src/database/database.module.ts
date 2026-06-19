@@ -23,6 +23,7 @@ import { TenantProvisioningService } from './tenant-datasource.service';
         entities: [Tenant, TenantInvitation], // ← ONLY public-schema entities
         migrations: ['dist/database/migrations/public/*.js'],
         migrationsRun: true,
+        ssl: { rejectUnauthorized: false },
         extra: {
           idleTimeoutMillis: 60_000,
           connectionTimeoutMillis: 5_000,
