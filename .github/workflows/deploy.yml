@@ -37,17 +37,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: deployment/provision.sh
-          target: /home/ubuntu/scripts
-
-      - name: Upload deploy script
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: deployment/deploy.sh
-          target: /home/ubuntu/scripts
+          source: deployment/provision.sh, deployment/deploy.sh
+          target: /home/ubuntu/
 
       - name: SSH & Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -56,5 +47,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo bash /home/ubuntu/scripts/provision.sh
-            sudo bash /home/ubuntu/scripts/deploy.sh
+            sudo bash /home/ubuntu/deployment/provision.sh
+            sudo bash /home/ubuntu/deployment/deploy.sh
