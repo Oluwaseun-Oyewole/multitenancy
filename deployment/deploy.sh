@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_DIR="/home/tenant/app"
-REPO_URL="https://github.com/Oluwaseun-Oyewole/multi_tenancy"
+REPO_URL="https://github.com/Oluwaseun-Oyewole/multitenancy"
 BRANCH="${1:-main}"
 APP_USER="tenant"
 NVM_INIT='export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"'
