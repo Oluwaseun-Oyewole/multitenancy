@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
-    "typeorm:prod": "node -r ./node_modules/typeorm/cli",
+    "typeorm:prod": "node ./node_modules/typeorm/cli",
     "migration:create:public": "npm run typeorm -- migration:create src/database/migrations/public/$npm_config_name",
     "migration:create:public:prod": " npm run typeorm:prod -- migration:create src/database/migrations/public/$npm_config_name -d dist/database/datasources/public.datasource.js",
     "migration:create:tenant": "npm run typeorm -- migration:create src/database/migrations/tenant/$npm_config_name",
