@@ -21,6 +21,24 @@ chown tenant:tenant /var/log/multi-tenancy
 echo "tenant ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/tenant
 chmod 440 /etc/sudoers.d/tenant
 
+# --- PostgreSQL Client (psql) ---
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+  | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] \
+  https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+  > /etc/apt/sources.list.d/pgdg.list
+
+apt-get update -y
+apt-get install -y postgresql-client-16
+
+
+# --- Nginx ---
+apt-get install -y nginx
+systemctl enable nginx
+systemctl start nginx
+
+
 # --- Node.js 20 LTS via NVM (installed under tenant) ---
 sudo -u tenant -H bash -c '
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
