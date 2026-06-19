@@ -29,6 +29,8 @@
     "migration:generate:tenant:prod": "npm run typeorm -- migration:generate src/database/migrations/tenant/$npm_config_name -d dist/database/datasources/tenant.datasource.js",
     "migration:run:public": "npm run typeorm -- migration:run -d src/database/datasources/public.datasource.ts",
     "migration:run:tenant": "npm run typeorm -- migration:run -d src/database/datasources/tenant.datasource.ts",
+    "migration:run:public:prod": "npm run typeorm -- migration:run -d dist/database/datasources/public.datasource.js",
+    "migration:run:tenant:prod": "npm run typeorm -- migration:run -d dist/database/datasources/tenant.datasource.js",
     "migration:revert:public": "npm run typeorm -- migration:revert -d src/database/datasources/public.datasource.ts",
     "migration:revert:tenant": "npm run typeorm -- migration:revert -d src/database/datasources/tenant.datasource.ts"
   },
