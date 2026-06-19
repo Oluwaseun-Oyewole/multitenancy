@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+APP_DIR="/home/tenant/app"
+REPO_URL="https://github.com/Oluwaseun-Oyewole/multi_tenancy"
+BRANCH="${1:-main}"
+APP_USER="tenant"
+NVM_INIT='export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"'
+echo "=== Deploying branch: $BRANCH at $(date) ==="
+
+# --- Pull latest code ---
+if [ -d "$APP_DIR" ]; then
+  sudo -u "$APP_USER" bash -c "cd $APP_DIR && git fetch origin && git checkout $BRANCH && git pull origin $BRANCH"
+else
+  git clone -b "$BRANCH" "$REPO_URL" "$APP_DIR"
+  chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+fi
+  
+# --- Ensure .env exists ---
+if [ ! -f "$APP_DIR/.env" ]; then
+  echo "❌ Missing $APP_DIR/.env — create it before deploying. Aborting."
+  exit 1
+fi
+
+# --- Install deps, build, then prune dev deps ---
+sudo -u "$APP_USER" -H bash -c "
+  set -euo pipefail
+  $NVM_INIT
+  cd $APP_DIR
+  npm ci --force 
+  npm run build
+  npm prune --omit=dev
+"
+
+# --- Run DB migrations ---
+sudo -u "$APP_USER" -H bash -c "
+  set -euo pipefail
+  $NVM_INIT
+  cd $APP_DIR
+  npm run migration:run
+"
+# --- Reload PM2 (zero-downtime) ---
+sudo -u "$APP_USER" -H bash -c "
+  set -euo pipefail
+  $NVM_INIT
+  cd $APP_DIR
+  pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+  pm2 save
+"
+
+echo "=== Deploy complete at $(date) ==="
+
+
+
