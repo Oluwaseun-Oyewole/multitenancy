@@ -37,7 +37,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: deployment-pipeline/provision.sh
+          source: deployment/provision.sh
           target: /home/ubuntu/scripts
 
       - name: Upload deploy script
@@ -46,7 +46,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: deployment-pipeline/deploy.sh
+          source: deployment/deploy.sh
           target: /home/ubuntu/scripts
 
       - name: SSH & Deploy
